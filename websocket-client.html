@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>WebSocket Demo</title>
+    <style>
+      :root {
+        --bg: #0f172a;
+        --card: #0b1220;
+        --accent: #0a84ff;
+        --accent-pressed: #0066cc;
+        --muted: #94a3b8;
+        --text: #e6eef8;
+        --disabled-bg: #374151;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: linear-gradient(180deg, #071023 0%, #0b1220 100%);
+        color: var(--text);
+        font-family: system-ui, -apple-system, Segoe UI, Roboto,
+          'Helvetica Neue', Arial;
+      }
+      .safe {
+        box-sizing: border-box;
+        max-width: 900px;
+        margin: 24px auto;
+        padding: 20px;
+        background: var(--card);
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(2, 6, 23, 0.6);
+      }
+      h1 {
+        margin: 0 0 12px;
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .btn {
+        appearance: none;
+        border: 0;
+        padding: 10px 14px;
+        border-radius: 8px;
+        background: var(--accent);
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 120px;
+      }
+      .btn:active {
+        background: var(--accent-pressed);
+      }
+      .btn[aria-disabled='true'],
+      .btn.disabled {
+        background: var(--disabled-bg);
+        color: var(--muted);
+        cursor: not-allowed;
+      }
+      .status {
+        margin-bottom: 12px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .badge {
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+      }
+      .messages {
+        max-height: 50vh;
+        overflow: auto;
+        padding: 12px;
+        border-radius: 8px;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.01)
+        );
+        border: 1px solid rgba(255, 255, 255, 0.02);
+      }
+      .msg {
+        padding: 8px;
+        border-radius: 6px;
+        margin-bottom: 8px;
+        background: rgba(255, 255, 255, 0.02);
+        font-size: 14px;
+        color: var(--text);
+      }
+      .meta {
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      footer {
+        margin-top: 12px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      /* input styles */
+      .chatInput {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #334155;
+        background: #071229;
+        color: var(--text);
+        margin-bottom: 8px;
+        box-sizing: border-box;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="safe" role="main">
+      <h1>WebSocket Demo (plain HTML)</h1>
+
+      <div class="status">
+        <div class="badge" id="connBadge">Disconnected</div>
+        <div class="meta" id="connMeta">No connection</div>
+      </div>
+
+      <div class="controls" id="controls">
+        <button class="btn" id="startBtn">Start Connection</button>
+        <button class="btn disabled" id="sendBtn" aria-disabled="true">
+          Send Message
+        </button>
+        <button class="btn disabled" id="disconnectBtn" aria-disabled="true">
+          Disconnect
+        </button>
+      </div>
+
+      <!-- chat input -->
+      <input id="chatInput" class="chatInput" placeholder="Type a message..." />
+
+      <div class="messages" id="messages" aria-live="polite"></div>
+
+      <footer>Server: <code>ws://localhost:9000</code></footer>
+    </main>
+
+    <script>
+      (function () {
+        const url = 'ws://localhost:9000';
+        let ws = null;
+        let myId = null;
+        const startBtn = document.getElementById('startBtn');
+        const sendBtn = document.getElementById('sendBtn');
+        const likeBtn = document.getElementById('likeBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const connBadge = document.getElementById('connBadge');
+        const connMeta = document.getElementById('connMeta');
+        const messagesEl = document.getElementById('messages');
+        const chatInput = document.getElementById('chatInput');
+
+        function setConnected(connected, meta = '') {
+          connBadge.textContent = connected ? 'Connected' : 'Disconnected';
+          connMeta.textContent = meta || (connected ? 'Open' : 'No connection');
+          toggleBtn(sendBtn, connected);
+          toggleBtn(likeBtn, connected);
+          toggleBtn(disconnectBtn, connected);
+          startBtn.disabled = connected;
+          startBtn.classList.toggle('disabled', connected);
+          chatInput.disabled = !connected;
+        }
+
+        function toggleBtn(btn, enabled) {
+          if (!enabled) {
+            btn.setAttribute('aria-disabled', 'true');
+            btn.classList.add('disabled');
+            btn.disabled = true;
+          } else {
+            btn.removeAttribute('aria-disabled');
+            btn.classList.remove('disabled');
+            btn.disabled = false;
+          }
+        }
+
+        function addMessage(text) {
+          const el = document.createElement('div');
+          el.className = 'msg';
+          el.textContent = text;
+          messagesEl.appendChild(el);
+          messagesEl.scrollTop = messagesEl.scrollHeight;
+        }
+
+        function formatIncoming(raw) {
+          try {
+            const obj = JSON.parse(raw);
+            switch (obj.type) {
+              case 'welcome':
+                myId = obj.id;
+                return `System: Welcome — your id ${obj.id} (total ${obj.total})`;
+              case 'echo':
+                return obj.from === myId
+                  ? `You: ${obj.text}`
+                  : `User ${obj.from} (echo): ${obj.text}`;
+              case 'broadcast':
+              case 'broadcastAll':
+                return `User ${obj.from}: ${obj.text}`;
+              case 'clientDisconnected':
+                return `System: Client ${obj.id} disconnected (total ${obj.total})`;
+              default:
+                return JSON.stringify(obj);
+            }
+          } catch {
+            return raw;
+          }
+        }
+
+        function startConnection() {
+          if (ws) return;
+          addMessage('Connecting to ' + url + ' ...');
+          ws = new WebSocket(url);
+
+          ws.addEventListener('open', () => {
+            setConnected(true, 'Connection open');
+            addMessage('Connection opened');
+            try {
+              ws.send('Hello Server! (from web client)');
+            } catch (e) {}
+          });
+
+          ws.addEventListener('message', ev => {
+            try {
+              const text =
+                typeof ev.data === 'string' ? ev.data : '[binary data]';
+              addMessage('← ' + formatIncoming(text));
+            } catch (e) {
+              addMessage('← (failed to read message)');
+            }
+          });
+
+          ws.addEventListener('error', ev => {
+            addMessage('⚠ WebSocket error');
+            console.error('WS error', ev);
+          });
+
+          ws.addEventListener('close', ev => {
+            addMessage(
+              'Connection closed' +
+                (ev && ev.code ? ' (code=' + ev.code + ')' : ''),
+            );
+            ws = null;
+            setConnected(false, 'Closed');
+          });
+        }
+
+        function sendText(text) {
+          if (!ws || ws.readyState !== WebSocket.OPEN) {
+            addMessage('Cannot send, socket not open');
+            return;
+          }
+          try {
+            ws.send(text);
+            addMessage('→ You: ' + text);
+          } catch (e) {
+            addMessage('Failed to send: ' + e.message);
+          }
+        }
+
+        function disconnect() {
+          if (!ws) return;
+          try {
+            ws.close(1000, 'Manual disconnect');
+          } catch (e) {}
+        }
+
+        // wire up buttons
+        startBtn.addEventListener('click', startConnection);
+        sendBtn.addEventListener('click', () =>
+          sendText(chatInput.value || ''),
+        );
+        likeBtn.addEventListener('click', () => sendText('I like you'));
+        disconnectBtn.addEventListener('click', disconnect);
+
+        // send with Enter
+        chatInput.addEventListener('keydown', e => {
+          if (e.key === 'Enter' && ws && ws.readyState === WebSocket.OPEN) {
+            sendText(chatInput.value || '');
+            chatInput.value = '';
+          }
+        });
+
+        // initial UI state
+        setConnected(false, 'No connection');
+
+        // expose for debug
+        window.__wsDebug = { startConnection, sendText, disconnect };
+      })();
+    </script>
+  </body>
+</html>
