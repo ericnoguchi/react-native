@@ -72,7 +72,7 @@ const useStyles = () =>
         /* messages box */
         messagesBox: {
           marginTop: 12,
-          borderWidth: 1,
+
           color: 'black',
         },
         messageItem: {
@@ -191,6 +191,14 @@ export default function WebSocketDemo() {
         />
       </View>
 
+      <View style={styles.buttonRow}>
+        <CustomButton
+          title="Disconnect"
+          onPress={disconnect}
+          disabled={!connected}
+        />
+      </View>
+
       <TextInput
         style={styles.input}
         placeholder="Type a message..."
@@ -209,15 +217,6 @@ export default function WebSocketDemo() {
           disabled={!connected || text.trim().length === 0}
         />
       </View>
-
-      <View style={styles.buttonRow}>
-        <CustomButton
-          title="Disconnect"
-          onPress={disconnect}
-          disabled={!connected}
-        />
-      </View>
-
       <Text style={styles.statusText}>
         Connected: {connected ? 'Yes' : 'No'} {myId ? `(id ${myId})` : ''}
       </Text>
