@@ -41,12 +41,7 @@ export default function NativeMathDemo() {
   }, []);
 
   return (
-    <ScrollView
-      style={[
-        styles.container,
-        { backgroundColor: isDarkMode ? '#000' : '#fff' },
-      ]}
-    >
+    <ScrollView style={[styles.container]}>
       <Text style={styles.header}>Native Module Result</Text>
       <Text style={styles.text}>
         add(2, 4): {result !== null ? result : 'Calculating...'}
@@ -75,6 +70,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 20,
+    color: 'blue',
     marginVertical: 10,
   },
 });

@@ -9,81 +9,6 @@ import {
 } from 'react-native';
 import useWebSocket from './useWebSocket';
 
-const useStyles = () =>
-  useMemo(
-    () =>
-      StyleSheet.create({
-        container: {
-          padding: 20,
-        },
-        buttonRow: {
-          marginBottom: 8,
-        },
-        statusText: {
-          marginVertical: 8,
-        },
-        messageText: {
-          marginBottom: 4,
-        },
-
-        /* Button styles */
-        button: {
-          borderRadius: 8,
-          paddingVertical: 12,
-          paddingHorizontal: 16,
-          alignItems: 'center',
-          justifyContent: 'center',
-        },
-        buttonActive: {
-          backgroundColor: '#0A84FF', // high-contrast blue
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.2,
-          shadowRadius: 1.5,
-          elevation: 2,
-        },
-        buttonPressed: {
-          backgroundColor: '#0066cc', // slightly darker when pressed
-        },
-        buttonDisabled: {
-          backgroundColor: '#1f2937', // darker grey for better contrast
-        },
-        buttonText: {
-          color: '#ffffff',
-          fontWeight: '600',
-        },
-        buttonTextDisabled: {
-          color: '#9ca3af', // lighter disabled text for contrast
-          fontWeight: '600',
-        },
-
-        /* input */
-        input: {
-          borderWidth: 1,
-          borderColor: '#334155',
-          backgroundColor: '#0b1220',
-          color: '#e6eef8',
-          paddingVertical: 10,
-          paddingHorizontal: 12,
-          borderRadius: 8,
-          marginBottom: 8,
-        },
-
-        /* messages box */
-        messagesBox: {
-          marginTop: 12,
-
-          color: 'black',
-        },
-        messageItem: {
-          padding: 8,
-          borderRadius: 6,
-          marginBottom: 8,
-        },
-      }),
-    [],
-  );
-
 export default function WebSocketDemo() {
   const { connected, messages, start, disconnect, send } = useWebSocket();
   const styles = useStyles();
@@ -116,6 +41,7 @@ export default function WebSocketDemo() {
     setText('');
   }
 
+  // eslint-disable-next-line react/no-unstable-nested-components
   function CustomButton({
     title,
     onPress,
@@ -231,3 +157,78 @@ export default function WebSocketDemo() {
     </View>
   );
 }
+
+const useStyles = () =>
+  useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          padding: 20,
+        },
+        buttonRow: {
+          marginBottom: 8,
+        },
+        statusText: {
+          marginVertical: 8,
+        },
+        messageText: {
+          marginBottom: 4,
+        },
+
+        /* Button styles */
+        button: {
+          borderRadius: 8,
+          paddingVertical: 12,
+          paddingHorizontal: 16,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        buttonActive: {
+          backgroundColor: '#0A84FF', // high-contrast blue
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.2,
+          shadowRadius: 1.5,
+          elevation: 2,
+        },
+        buttonPressed: {
+          backgroundColor: '#0066cc', // slightly darker when pressed
+        },
+        buttonDisabled: {
+          backgroundColor: '#1f2937', // darker grey for better contrast
+        },
+        buttonText: {
+          color: '#ffffff',
+          fontWeight: '600',
+        },
+        buttonTextDisabled: {
+          color: '#9ca3af', // lighter disabled text for contrast
+          fontWeight: '600',
+        },
+
+        /* input */
+        input: {
+          borderWidth: 1,
+          borderColor: '#334155',
+          backgroundColor: '#0b1220',
+          color: '#e6eef8',
+          paddingVertical: 10,
+          paddingHorizontal: 12,
+          borderRadius: 8,
+          marginBottom: 8,
+        },
+
+        /* messages box */
+        messagesBox: {
+          marginTop: 12,
+
+          color: 'black',
+        },
+        messageItem: {
+          padding: 8,
+          borderRadius: 6,
+          marginBottom: 8,
+        },
+      }),
+    [],
+  );
