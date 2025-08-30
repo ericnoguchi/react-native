@@ -164,7 +164,6 @@
         let myId = null;
         const startBtn = document.getElementById('startBtn');
         const sendBtn = document.getElementById('sendBtn');
-        const likeBtn = document.getElementById('likeBtn');
         const disconnectBtn = document.getElementById('disconnectBtn');
         const connBadge = document.getElementById('connBadge');
         const connMeta = document.getElementById('connMeta');
@@ -175,7 +174,6 @@
           connBadge.textContent = connected ? 'Connected' : 'Disconnected';
           connMeta.textContent = meta || (connected ? 'Open' : 'No connection');
           toggleBtn(sendBtn, connected);
-          toggleBtn(likeBtn, connected);
           toggleBtn(disconnectBtn, connected);
           startBtn.disabled = connected;
           startBtn.classList.toggle('disabled', connected);
@@ -289,7 +287,6 @@
         sendBtn.addEventListener('click', () =>
           sendText(chatInput.value || ''),
         );
-        likeBtn.addEventListener('click', () => sendText('I like you'));
         disconnectBtn.addEventListener('click', disconnect);
 
         // send with Enter
